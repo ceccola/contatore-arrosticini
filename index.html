@@ -37,6 +37,7 @@
   main {
     position: relative;
     z-index: 1;
+    width: min(100%, 640px);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -164,6 +165,47 @@
     opacity: 1;
     transform: none;
   }
+
+  .reset {
+    appearance: none;
+    -webkit-appearance: none;
+    font: inherit;
+    font-size: clamp(.8rem, 3vmin, .95rem);
+    font-weight: 600;
+    letter-spacing: .06em;
+    color: rgba(255, 205, 160, .78);
+    background: rgba(255, 150, 70, .07);
+    border: 1px solid rgba(255, 170, 90, .28);
+    border-radius: 999px;
+    padding: .55em 1.25em;
+    display: inline-flex;
+    align-items: center;
+    gap: .45em;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background .2s ease, border-color .2s ease, color .2s ease,
+                transform .12s ease, opacity .2s ease;
+  }
+
+  .reset:hover:not(:disabled) {
+    background: rgba(255, 150, 70, .14);
+    border-color: rgba(255, 180, 105, .5);
+    color: #ffe2bd;
+  }
+
+  .reset:active:not(:disabled) {
+    transform: scale(.96);
+  }
+
+  .reset:disabled {
+    opacity: .28;
+    cursor: default;
+  }
+
+  .reset:focus-visible {
+    outline: 2px solid rgba(255, 190, 120, .8);
+    outline-offset: 3px;
+  }
 </style>
 </head>
 <body>
@@ -239,6 +281,10 @@
     </button>
 
     <p class="milestone" id="milestone" aria-live="polite"></p>
+
+    <button class="reset" id="reset" type="button" disabled>
+      <span aria-hidden="true">↺</span> Azzera
+    </button>
   </main>
 
 <script>
@@ -251,6 +297,7 @@
   const countEl = document.getElementById("count");
   const labelEl = document.getElementById("label");
   const milestoneEl = document.getElementById("milestone");
+  const resetButton = document.getElementById("reset");
 
   const PALETTE = ["#ff6b35", "#ffb703", "#fb8500", "#e63946", "#ffd166", "#fff1d6"];
   const MILESTONES = {
@@ -419,8 +466,13 @@
 
   let count = 0;
 
+  function syncReset() {
+    resetButton.disabled = count === 0;
+  }
+
   button.addEventListener("click", (event) => {
     count++;
+    syncReset();
     countEl.textContent = count;
     labelEl.textContent = count === 1 ? "arrosticino" : "arrosticini";
     pop(countEl);
@@ -446,6 +498,23 @@
     } else {
       spawn(x, y, { count: 28, speed: 9 });
     }
+  });
+
+  resetButton.addEventListener("click", () => {
+    count = 0;
+    countEl.textContent = "0";
+    labelEl.textContent = "arrosticini";
+    pop(countEl);
+
+    clearTimeout(milestoneTimer);
+    milestoneEl.classList.remove("show");
+    milestoneEl.textContent = "";
+
+    // ferma i coriandoli ancora in volo
+    particles = [];
+    ctx.clearRect(0, 0, W, H);
+
+    syncReset();
   });
 })();
 </script>
